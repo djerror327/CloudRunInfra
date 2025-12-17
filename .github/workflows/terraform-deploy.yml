@@ -31,9 +31,11 @@ jobs:
       working-directory: terraform
 
     - name: Terraform Plan
-      run: terraform plan
+      run: terraform plan -var="project_id=project-c6b4b0d2-de08-4dbe-bb2" -var="region=us-central1"
       working-directory: terraform
 
+
     - name: Terraform Apply
-      run: terraform apply -auto-approve
+      run: terraform apply -auto-approve -var="project_id=project-c6b4b0d2-de08-4dbe-bb2" -var="region=us-central1"
       working-directory: terraform
+
