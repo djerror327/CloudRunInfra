@@ -1,0 +1,39 @@
+name: Terraform - Deploy Cloud Run
+
+on:
+  push:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Authenticate to GCP using WIF
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: projects/237514272592/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+        service_account: github-tf-sa@project-c6b4b0d2-de08-4dbe-bb2.iam.gserviceaccount.com
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init (Remote Backend)
+      run: terraform init
+      working-directory: terraform
+
+    - name: Terraform Plan
+      run: terraform plan
+      working-directory: terraform
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: terraform

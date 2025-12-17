@@ -1,0 +1,53 @@
+project-c6b4b0d2-de08-4dbe-bb2
+
+237514272592
+
+GITHUB_REPO = djerror327/CloudRunInfra
+
+==============================================================
+gcloud iam workload-identity-pools create github-pool \
+  --project=project-c6b4b0d2-de08-4dbe-bb2 \
+  --location=global \
+  --display-name="GitHub Actions Pool"
+
+gcloud iam workload-identity-pools list --location=global
+---
+displayName: GitHub Actions Pool
+name: projects/237514272592/locations/global/workloadIdentityPools/github-pool
+state: ACTIVE
+
+=============================================================
+gcloud iam workload-identity-pools providers create-oidc github-provider \
+  --project=project-c6b4b0d2-de08-4dbe-bb2 \
+  --location=global \
+  --workload-identity-pool=github-pool \
+  --display-name="GitHub Provider" \
+  --issuer-uri="https://token.actions.githubusercontent.com" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="attribute.repository == 'djerror327/CloudRunInfra'"
+
+=======================================================
+gcloud iam service-accounts create github-tf-sa \
+  --display-name="GitHub Terraform Service Account"
+=======================================================
+gcloud iam service-accounts add-iam-policy-binding \
+  github-tf-sa@project-c6b4b0d2-de08-4dbe-bb2.iam.gserviceaccount.com \
+  --role=roles/iam.workloadIdentityUser \
+  --member="principalSet://iam.googleapis.com/projects/237514272592/locations/global/workloadIdentityPools/github-pool/attribute.repository/djerror327/CloudRunInfra"
+
+
+====================================================
+gcloud projects add-iam-policy-binding project-c6b4b0d2-de08-4dbe-bb2 \
+  --member="serviceAccount:github-tf-sa@project-c6b4b0d2-de08-4dbe-bb2.iam.gserviceaccount.com" \
+  --role="roles/run.admin"
+=====================================================
+
+gcloud projects add-iam-policy-binding project-c6b4b0d2-de08-4dbe-bb2 \
+  --member="serviceAccount:github-tf-sa@project-c6b4b0d2-de08-4dbe-bb2.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
+======================================================
+
+gcloud projects add-iam-policy-binding project-c6b4b0d2-de08-4dbe-bb2 \
+  --member="serviceAccount:github-tf-sa@project-c6b4b0d2-de08-4dbe-bb2.iam.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+
